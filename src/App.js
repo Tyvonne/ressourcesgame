@@ -21,20 +21,12 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 
 var stockDepotCobalt = 0;
-//var cumulatedCobaltMine = 0;
-//output [unit/s]
-//var outputCarboneMine = 3;
-//var outputCobaltMine = 7;
-//speed [pixel/s]
-var speed = 10;
-//capacity [unit]
 var capacity = 2;
-//distance [pixel]
 var distanceCarboneMine = 150;
-//var distanceCobaltMine = 60;
 
 let productionInterval
 let transportInterval
+let intervaCarbonelMine
 
 function App() {
   var [outputCarboneMine, setOutputCarboneMine] = useState(30);
@@ -52,6 +44,7 @@ function App() {
   };
   const outputCarboneSpeedChange = (event) => {
     setOutputCarboneSpeed(parseInt(event.target.value));
+    intervaCarbonelMine = distanceCarboneMine / outputCarboneSpeed
   };
   const outputCarboneCapacityMineChange = (event) => {
     setOutputCarboneCapacityMine(parseInt(event.target.value));
@@ -76,9 +69,9 @@ function App() {
     return () => clearInterval(productionInterval);
   }, [carboneMineActivity, outputCarboneMine]);
 
-  let intervaCarbonelMine = distanceCarboneMine / speed
+  intervaCarbonelMine = distanceCarboneMine / outputCarboneSpeed
   useEffect(() => {
-    if (!carboneMineActivity) {
+    if (!carboneMineActivity || !carboneMineTransportActivity) {
       clearInterval(transportInterval);
     } else {
       clearInterval(transportInterval);
@@ -90,7 +83,7 @@ function App() {
       }, intervaCarbonelMine * 1000 * 2);
       return () => clearInterval(transportInterval);
     }
-  }, [carboneMineActivity, carboneMineTransportActivity]);
+  }, [carboneMineActivity, carboneMineTransportActivity, outputCarboneSpeed]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -123,7 +116,7 @@ function App() {
         <Grid item xs={3}  >
         </Grid>
         <Grid item xs={6}  >
-          <Card sx={{ margin: 1, minWidth: 275, maxWidth: 500 }}>
+          <Card sx={{ minWidth: 275, maxWidth: 500 }}>
             <CardContent>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                 Ressources de la base
@@ -157,7 +150,7 @@ function App() {
         <Grid item xs={1}  >
         </Grid>
         <Grid item xs={6}>
-          <Card sx={{ margin: 1, minWidth: 300, maxWidth: 500, height: 300 }}>
+          <Card sx={{ minWidth: 300, maxWidth: 500, height: 300 }}>
             <CardContent>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                 Mine de Carbone
@@ -192,7 +185,7 @@ function App() {
           </Card>
         </Grid>
         <Grid item xs={4}>
-          <Card sx={{ margin: 1, minWidth: 50, maxWidth: 400, height: 300 }}>
+          <Card sx={{ minWidth: 50, maxWidth: 400, height: 300 }}>
             <CardContent>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                 Transport de Carbone
