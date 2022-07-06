@@ -21,7 +21,6 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 
 var stockDepotCobalt = 0;
-var capacity = 2;
 var distanceCarboneMine = 150;
 
 let productionInterval
@@ -76,14 +75,14 @@ function App() {
     } else {
       clearInterval(transportInterval);
       transportInterval = setInterval(() => {
-        setCumulatedCarboneMine(cumulatedCarboneMine => cumulatedCarboneMine - capacity);
+        setCumulatedCarboneMine(cumulatedCarboneMine => cumulatedCarboneMine - outputCarboneCapacityMine);
         setTimeout(() => {
-          setStockDepotCarbone(stockDepotCarbone => stockDepotCarbone + capacity);
+          setStockDepotCarbone(stockDepotCarbone => stockDepotCarbone + outputCarboneCapacityMine);
         }, intervaCarbonelMine * 1000)
       }, intervaCarbonelMine * 1000 * 2);
       return () => clearInterval(transportInterval);
     }
-  }, [carboneMineActivity, carboneMineTransportActivity, outputCarboneSpeed]);
+  }, [carboneMineActivity, carboneMineTransportActivity, outputCarboneSpeed, outputCarboneCapacityMine]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
