@@ -84,6 +84,10 @@ function App() {
     }
   }, [carboneMineActivity, carboneMineTransportActivity, outputCarboneSpeed, outputCarboneCapacityMine]);
 
+  function reloadPage() {
+    window.location.reload(false);
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
 
@@ -101,7 +105,7 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Welcome to the mining management game
           </Typography>
-          <Button color="inherit">Restart all</Button>
+          <Button color="inherit" onClick={reloadPage} >Restart all</Button>
         </Toolbar>
       </AppBar>
 
