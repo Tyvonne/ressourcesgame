@@ -20,6 +20,9 @@ import Switch from '@mui/material/Switch';
 
 import TextField from '@mui/material/TextField';
 
+import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgress from '@mui/material/CircularProgress';
+
 var stockDepotCobalt = 0;
 var distanceCarboneMine = 150;
 
@@ -28,7 +31,7 @@ let transportInterval
 let intervaCarbonelMine
 
 function App() {
-  var [outputCarboneMine, setOutputCarboneMine] = useState(30);
+  var [outputCarboneMine, setOutputCarboneMine] = useState(3);
   var [outputCarboneSpeed, setOutputCarboneSpeed] = useState(10);
   var [outputCarboneCapacityMine, setOutputCarboneCapacityMine] = useState(2);
 
@@ -37,6 +40,10 @@ function App() {
 
   const [carboneMineActivity, setCarboneMineActivity] = useState(false);
   const [carboneMineTransportActivity, setCarboneMineTransportActivity] = useState(false);
+
+  const [carboneTransportLoading, setCarboneTransportLoading] = useState(false);
+  const [carboneTransportProgress, setCarboneTransportProgress] = useState(50);
+  const [carboneMineLoading, setCarboneMineLoading] = useState(false);
 
   const outputCarboneMineChange = (event) => {
     setOutputCarboneMine(parseInt(event.target.value));
@@ -51,9 +58,11 @@ function App() {
 
   const switchCarboneChange = (event) => {
     setCarboneMineActivity(event.target.checked);
+    setCarboneMineLoading(event.target.checked)
   };
   const switchCarboneTransportChange = (event) => {
     setCarboneMineTransportActivity(event.target.checked);
+    setCarboneTransportLoading(event.target.checked)
   };
 
   useEffect(() => {
@@ -84,9 +93,21 @@ function App() {
     }
   }, [carboneMineActivity, carboneMineTransportActivity, outputCarboneSpeed, outputCarboneCapacityMine]);
 
+  useEffect(() => {
+    const transportTimer = setInterval(() => {
+      setCarboneTransportProgress((prevProgress) =>
+        prevProgress >= 100 ? 0 : prevProgress + (outputCarboneSpeed * 100 / distanceCarboneMine)
+      );
+    }, 1000);
+    return () => {
+      clearInterval(transportTimer);
+    };
+  }, [outputCarboneSpeed]);
+
   function reloadPage() {
     window.location.reload(false);
   }
+
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -159,7 +180,8 @@ function App() {
                 Mine de Carbone
               </Typography>
               <CardActions>
-                <FormControlLabel control={<Switch />} label="Activer la mine de Carbone" onChange={switchCarboneChange} />
+                <FormControlLabel control={<Switch />} label="Activer la mine de Carbone" onChange={switchCarboneChange} sx={{ width: '90%', height: 50 }} />
+                {carboneMineLoading && (<CircularProgress />)}
               </CardActions>
               <TextField fullWidth sx={{ m: 1 }}
                 id="outlined-number"
@@ -188,14 +210,17 @@ function App() {
           </Card>
         </Grid>
         <Grid item xs={4}>
-          <Card sx={{ minWidth: 50, maxWidth: 400, height: 300 }}>
+          <Card sx={{ minWidth: 50, maxWidth: 300, height: 300 }}>
             <CardContent>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                 Transport de Carbone
               </Typography>
               <CardActions>
-                <FormControlLabel control={<Switch />} label="Activer le transport de Carbone" onChange={switchCarboneTransportChange} />
+                <FormControlLabel control={<Switch color="secondary" />} label="Activer le transport de Carbone" onChange={switchCarboneTransportChange} />
               </CardActions>
+              <Box sx={{ width: '100%' }}>
+                {carboneTransportLoading && (<LinearProgress color="secondary" variant="determinate" value={carboneTransportProgress} />)}
+              </Box>
               <TextField fullWidth sx={{ m: 1 }}
                 id="outlined-number"
                 label="Vitesse du transport [pixel/s]"
@@ -223,6 +248,7 @@ function App() {
                 }}
               />
             </CardContent>
+
           </Card>
         </Grid>
         <Grid item xs={1}  >
