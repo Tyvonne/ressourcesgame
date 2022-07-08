@@ -23,6 +23,12 @@ import TextField from '@mui/material/TextField';
 import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+import { Stack } from '@mui/material';
+
+import Checkbox from '@mui/material/Checkbox';
+
 var stockDepotCobalt = 0;
 var distanceCarboneMine = 150;
 
@@ -45,6 +51,13 @@ function App() {
   const [carboneTransportProgress, setCarboneTransportProgress] = useState(50);
   const [carboneMineLoading, setCarboneMineLoading] = useState(false);
 
+  const [openCarboneMineDialog, setOpenCarboneMineDialog] = useState(false);
+  const [openCarboneMineTransportDialog, setOpenCarboneMineTransportDialog] = useState(false);
+  const [openCarboneBaseTransportDialog, setOpenCarboneBaseTransportDialog] = useState(false);
+
+  const [mineDetailEventChecked, setMineDetailEventChecked] = useState(false);
+  const [transportDetailEventChecked, setTransportDetailEventChecked] = useState(false);
+
   const outputCarboneMineChange = (event) => {
     setOutputCarboneMine(parseInt(event.target.value));
   };
@@ -65,6 +78,17 @@ function App() {
     setCarboneTransportLoading(event.target.checked)
   };
 
+  const mineDetailChange = (event) => {
+    setMineDetailEventChecked(event.target.checked);
+  };
+  const transportDetailChange = (event) => {
+    setTransportDetailEventChecked(event.target.checked);
+  };
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+
   useEffect(() => {
     if (!carboneMineActivity) {
       clearInterval(productionInterval);
@@ -72,10 +96,13 @@ function App() {
       clearInterval(productionInterval);
       productionInterval = setInterval(() => {
         setCumulatedCarboneMine(cumulatedCarboneMine => cumulatedCarboneMine + outputCarboneMine);
+        if (mineDetailEventChecked) {
+          setOpenCarboneMineDialog(true);
+        };
       }, 1000);
     }
     return () => clearInterval(productionInterval);
-  }, [carboneMineActivity, outputCarboneMine]);
+  }, [carboneMineActivity, mineDetailEventChecked, outputCarboneMine]);
 
   intervaCarbonelMine = distanceCarboneMine / outputCarboneSpeed
   useEffect(() => {
@@ -85,13 +112,15 @@ function App() {
       clearInterval(transportInterval);
       transportInterval = setInterval(() => {
         setCumulatedCarboneMine(cumulatedCarboneMine => cumulatedCarboneMine - outputCarboneCapacityMine);
+        transportDetailEventChecked && setOpenCarboneMineTransportDialog(true);
         setTimeout(() => {
           setStockDepotCarbone(stockDepotCarbone => stockDepotCarbone + outputCarboneCapacityMine);
+          transportDetailEventChecked && setOpenCarboneBaseTransportDialog(true);
         }, intervaCarbonelMine * 1000)
       }, intervaCarbonelMine * 1000 * 2);
       return () => clearInterval(transportInterval);
     }
-  }, [carboneMineActivity, carboneMineTransportActivity, outputCarboneSpeed, outputCarboneCapacityMine]);
+  }, [carboneMineActivity, carboneMineTransportActivity, transportDetailEventChecked, outputCarboneSpeed, outputCarboneCapacityMine]);
 
   useEffect(() => {
     const transportTimer = setInterval(() => {
@@ -108,6 +137,14 @@ function App() {
     window.location.reload(false);
   }
 
+  const handleAlertClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenCarboneMineDialog(false);
+    setOpenCarboneMineTransportDialog(false);
+    setOpenCarboneBaseTransportDialog(false);
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -174,7 +211,7 @@ function App() {
         <Grid item xs={1}  >
         </Grid>
         <Grid item xs={6}>
-          <Card sx={{ minWidth: 300, maxWidth: 500, height: 300 }}>
+          <Card sx={{ minWidth: 300, maxWidth: 500, height: 320 }}>
             <CardContent>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                 Mine de Carbone
@@ -206,11 +243,19 @@ function App() {
                   shrink: true,
                 }}
               />
+              <FormControlLabel control={
+                <Checkbox
+                  checked={mineDetailEventChecked}
+                  onChange={mineDetailChange}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                  size="small"
+                />
+              } label="Voir le détail des évenements de la mine" />
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={4}>
-          <Card sx={{ minWidth: 50, maxWidth: 300, height: 300 }}>
+          <Card sx={{ minWidth: 50, maxWidth: 300, height: 320 }}>
             <CardContent>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                 Transport de Carbone
@@ -247,6 +292,14 @@ function App() {
                   shrink: true,
                 }}
               />
+               <FormControlLabel control={
+                <Checkbox
+                  checked={transportDetailEventChecked}
+                  onChange={transportDetailChange}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                  size="small"
+                />
+              } label="Voir le détail du transport" />
             </CardContent>
 
           </Card>
@@ -255,6 +308,25 @@ function App() {
         </Grid>
 
       </Grid>
+
+      <Stack spacing={2} sx={{ width: '100%' }}>
+        <Snackbar open={openCarboneMineDialog} autoHideDuration={500} onClose={handleAlertClose} >
+          <Alert onClose={handleAlertClose} severity="info" sx={{ width: '100%' }}>
+            {outputCarboneMine} unités de Carbone sont ajoutés au stock de la mine
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openCarboneMineTransportDialog} autoHideDuration={6000} onClose={handleAlertClose} >
+          <Alert onClose={handleAlertClose} severity="warning" sx={{ width: '100%' }}>
+            {outputCarboneCapacityMine} unités de Carbone partent en transport vers la mine
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openCarboneBaseTransportDialog} autoHideDuration={6000} onClose={handleAlertClose} >
+          <Alert onClose={handleAlertClose} severity="success" sx={{ width: '100%' }}>
+            {outputCarboneCapacityMine} unités de Carbone sont ajoutés au stock de la base
+          </Alert>
+        </Snackbar>
+      </Stack>
+
     </Box>
 
   );
